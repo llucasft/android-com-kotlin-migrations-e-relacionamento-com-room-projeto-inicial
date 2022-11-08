@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.lifecycleScope
 import br.com.alura.orgs.database.AppDatabase
 import br.com.alura.orgs.databinding.ActivityListaProdutosActivityBinding
+import br.com.alura.orgs.extensions.vaiPara
 import br.com.alura.orgs.preferences.dataStore
 import br.com.alura.orgs.preferences.usuarioLogadoPreferences
 import br.com.alura.orgs.ui.recyclerview.adapter.ListaProdutosAdapter
@@ -46,9 +47,14 @@ class ListaProdutosActivity : AppCompatActivity() {
                     usuarioDao.buscaPorId(usuarioId).collect {
                         Log.i("ListaProdutos", "onCreate: $it")
                     }
-                }
+                } ?: vaiParaLogin()
             }
         }
+    }
+
+    private fun vaiParaLogin() {
+        vaiPara(LoginActivity::class.java)
+        finish()
     }
 
     private fun configuraFab() {
