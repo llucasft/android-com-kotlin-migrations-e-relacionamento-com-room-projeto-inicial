@@ -13,10 +13,12 @@ import br.com.alura.orgs.preferences.dataStore
 import br.com.alura.orgs.preferences.usuarioLogadoPreferences
 import br.com.alura.orgs.ui.dialog.FormularioImagemDialog
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
-class FormularioProdutoActivity : AppCompatActivity() {
+class FormularioProdutoActivity : UsuarioBaseActivity() {
 
     private val binding by lazy {
         ActivityFormularioProdutoBinding.inflate(layoutInflater)
@@ -44,15 +46,6 @@ class FormularioProdutoActivity : AppCompatActivity() {
                 }
         }
         tentaCarregarProduto()
-        lifecycleScope.launch{
-            dataStore.data.collect { preferences ->
-                preferences[usuarioLogadoPreferences]?.let { usuarioId ->
-                    usuarioDao.buscaPorId(usuarioId).collect {
-                        Log.i("FormularioProduto", "onCreate: $it")
-                    }
-                }
-            }
-        }
     }
 
     private fun tentaCarregarProduto() {
@@ -91,15 +84,19 @@ class FormularioProdutoActivity : AppCompatActivity() {
         val botaoSalvar = binding.activityFormularioProdutoBotaoSalvar
 
         botaoSalvar.setOnClickListener {
-            val produtoNovo = criaProduto()
+
             lifecycleScope.launch {
-                produtoDao.salva(produtoNovo)
-                finish()
+                usuario
+                    .value?.let { usuario ->
+                        val produtoNovo = criaProduto(usuario.id)
+                        produtoDao.salva(produtoNovo)
+                        finish()
+                    }
             }
         }
     }
 
-    private fun criaProduto(): Produto {
+    private fun criaProduto(usuarioId: String): Produto {
         val campoNome = binding.activityFormularioProdutoNome
         val nome = campoNome.text.toString()
         val campoDescricao = binding.activityFormularioProdutoDescricao
@@ -117,7 +114,8 @@ class FormularioProdutoActivity : AppCompatActivity() {
             nome = nome,
             descricao = descricao,
             valor = valor,
-            imagem = url
+            imagem = url,
+            usuarioId = usuarioId
         )
     }
 
